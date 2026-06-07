@@ -1,0 +1,25 @@
+ARDMS SYSTEM BACKUP REPORT - DATE: 2026-05-31
+Device Hostname: , DESKTOP-KBHB0SB
+Device Info: , DESKTOP-KBHB0SB (User: Alienware, OS: Windows_NT x64)
+Generated At: , 6/6/2026, 10:26:37 pm
+
+SECTION 1: RESCUE REQUESTS & TASKS
+Request ID,Type,Urgency,Status,Latitude,Longitude,Details/Location,Assigned Responder,Created At,Updated At,Device Node
+43,medical,critical,completed,12.9942491,80.1957301,Critical Emergency Triggered,Arjun Singh (MEM-01),2026-05-31 07:45:17,2026-05-31 07:47:24,DESKTOP-KBHB0SB
+44,medical,critical,completed,12.9943588,80.1939576,Critical Emergency Triggered,Arjun Singh (MEM-01),2026-05-31 10:29:17,2026-05-31 10:32:10,DESKTOP-KBHB0SB
+45,medical,critical,completed,12.9943625,80.1956744,Critical Emergency Triggered,Arjun Singh (MEM-01),2026-05-31 14:32:57,2026-05-31 14:33:23,DESKTOP-KBHB0SB
+46,supplies,normal,completed,12.9942743,80.1957261,"{""transportMode"":""ROAD"",""needs"":[6,2,1,2],""peopleCount"":""5"",""address"":"""",""attachments"":{""voice"":false,""camera"":false,""note"":false}}",Arjun Singh (MEM-01),2026-05-31 15:05:31,2026-05-31 15:06:25,DESKTOP-KBHB0SB
+47,supplies,normal,declined,12.9942743,80.1957261,"{""transportMode"":""ROAD"",""needs"":[6,2,1,2],""peopleCount"":""5"",""address"":"""",""attachments"":{""voice"":false,""camera"":false,""note"":false}}",Unassigned,2026-05-31 15:05:32,2026-05-31 15:05:39,DESKTOP-KBHB0SB
+
+
+SECTION 2: RESCUER COMMAND DISPATCHES
+Command ID,Assigned Group ID,Target Phone,Payload Details,Type,Status,Created At,Acknowledged At,Device Node
+34,N/A,919000000001,"{""message"":""MEDICAL RESCUE at Detected via GPS"",""sector"":""Detected via GPS"",""lat"":12.9942491,""lng"":80.1957301,""urgency"":""critical"",""rescue_req_id"":43,""requester_name"":""Citizen"",""requester_phone"":""918000000001"",""details"":""Critical Emergency Triggered""}",critical,completed,2026-05-31 07:46:41,,DESKTOP-KBHB0SB
+35,N/A,919000000001,"{""message"":""MEDICAL RESCUE at Detected via GPS"",""sector"":""Detected via GPS"",""lat"":12.9943588,""lng"":80.1939576,""urgency"":""critical"",""rescue_req_id"":44,""requester_name"":""Citizen"",""requester_phone"":""918000000001"",""details"":""Critical Emergency Triggered""}",critical,completed,2026-05-31 10:31:41,,DESKTOP-KBHB0SB
+36,N/A,919000000001,"{""message"":""MEDICAL RESCUE at Detected via GPS"",""sector"":""Detected via GPS"",""lat"":12.9943625,""lng"":80.1956744,""urgency"":""critical"",""rescue_req_id"":45,""requester_name"":""Citizen"",""requester_phone"":""918000000001"",""details"":""Critical Emergency Triggered""}",critical,completed,2026-05-31 14:33:06,,DESKTOP-KBHB0SB
+37,N/A,919000000001,"{""message"":""SUPPLIES RESCUE at Detected via GPS"",""sector"":""Detected via GPS"",""lat"":12.9942743,""lng"":80.1957261,""urgency"":""normal"",""rescue_req_id"":46,""requester_name"":""Citizen"",""requester_phone"":""918000000001"",""details"":""{\""transportMode\"":\""ROAD\"",\""needs\"":[6,2,1,2],\""peopleCount\"":\""5\"",\""address\"":\""\"",\""attachments\"":{\""voice\"":false,\""camera\"":false,\""note\"":false}}""}",critical,completed,2026-05-31 15:05:52,,DESKTOP-KBHB0SB
+
+
+SECTION 3: PUBLIC SOS ALERTS
+SOS ID,Device ID,Phone,Latitude,Longitude,Details,Status,Priority,Alert Time,Device Node
+NO SOS ALERTS FOR THIS DATE

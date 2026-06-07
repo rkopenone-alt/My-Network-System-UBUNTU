@@ -1,0 +1,15 @@
+{
+  "name": "rescue-operations-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix system-backend && npm install --prefix web-admin && npm install --prefix mobile-app",
+    "start:backend": "npm run dev --prefix system-backend",
+    "start:web": "npm run dev --prefix web-admin",
+    "start:all": "concurrently \"npm run start:backend\" \"npm run start:web\"",
+    "preview": "npm run start:all"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
