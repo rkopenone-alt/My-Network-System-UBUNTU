@@ -70,31 +70,31 @@ The Rescue Operations System is divided into four highly-optimized, interconnect
 
 ## 2. Deployment Guide
 
-Deploying the system locally involves setting up a private communication subnet to bridge your Windows PC server (localhost) and mobile devices. Below are two deployment methodologies.
+Deploying the system locally involves setting up a private communication subnet to bridge your Ubuntu LTS Server (localhost) and mobile devices. Below are two deployment methodologies.
 
 ### 2.1. Private Wi-Fi LAN Setup
 This is the standard approach using a local Wi-Fi router or mobile hotspot.
-1. **Connect to the Same Network:** Ensure your Windows computer and the Android devices are connected to the exact same Wi-Fi router or phone hotspot.
+1. **Connect to the Same Network:** Ensure your Ubuntu Server and the Android devices are connected to the exact same Wi-Fi router or phone hotspot.
 2. **Find Your Computer's LAN IP:**
-   * Open **PowerShell** (Press Windows Key, type `powershell`, and press Enter).
-   * Type `ipconfig` and press Enter.
+   * Open **Terminal** (Press Windows Key, type `bash`, and press Enter).
+   * Type `hostname -I` and press Enter.
    * Look for the section marked **`Wireless LAN adapter Wi-Fi`** and read the **`IPv4 Address`** (e.g., `192.168.1.4`).
-3. **Configure Windows Firewall:** Open PowerShell as **Administrator** (Right-click PowerShell -> Run as Administrator) and run:
-   ```powershell
-   New-NetFirewallRule -DisplayName "Rescue Backend Port 3001" -Direction Inbound -LocalPort 3001 -Protocol TCP -Action Allow
+3. **Configure Windows Firewall:** Open Terminal as **Administrator** (Right-click Terminal -> Run as Administrator) and run:
+   ```bash
+   sudo ufw allow 3001/tcp
    ```
 4. **Synchronize Endpoints:** Open CMD, navigate to the workspace, and run:
-   ```cmd
-   python sync_apps.py
+   ```bash
+   ./run_antigravity.sh
    ```
-5. **Start Server:** Navigate to `system-backend` and run `npm start`.
+5. **Start Server:** Navigate to `system-backend` and run ``.
 6. **Install APKs:** Copy files from `Output_APKs/` to your Android devices and install them.
 
 ### 2.2. Private Cellular Connection Setup
 If a Wi-Fi router is unavailable, range requirements extend across miles, or standard commercial infrastructure has collapsed, you can establish a private cellular-to-server connection using four distinct techniques.
 
 ### 2.2.1. Private Network-in-a-Box (NIB) Cellular Base Station Setup
-This advanced operational setup deploys a portable, fully self-contained cellular base station (eNodeB/gNodeB Software Defined Radio + Mobile Core EPC/5GC) containing an internal private Windows computer acting as the server. Rescuers connect using mobile devices equipped with private NIB-SIM cards.
+This advanced operational setup deploys a portable, fully self-contained cellular base station (eNodeB/gNodeB Software Defined Radio + Mobile Core EPC/5GC) containing an internal private Ubuntu Server acting as the server. Rescuers connect using mobile devices equipped with private NIB-SIM cards.
 
 #### A. Pre-Installation Setup Requirements (Host Computer Preparation)
 Before initializing the deployment, you must load the following software environments, hardware drivers, and utilities onto the NIB Windows server host computer:
@@ -103,14 +103,14 @@ Before initializing the deployment, you must load the following software environ
   * **BladeRF Windows Driver & Firmware:** For Nuand bladeRF units. Install the latest bladeRF driver and matching FPGA firmware.
   * **Zadig USB Driver Tool:** A utility to replace default Windows USB drivers with **`WinUSB`** for your specific SDR device. Connect the SDR, run Zadig, click *Options -> List All Devices*, select the SDR transceiver, and click *Replace Driver* to swap the manufacturer driver with the generic USB driver so user-space programs can directly access it.
 * **WSL2 (Windows Subsystem for Linux) Setup:**
-  * Since leading open-source cellular cores (e.g. Open5GS, srsRAN) compile and run natively on Linux, the Windows host requires **WSL2 with Ubuntu 22.04 LTS** installed.
-  * Execute inside PowerShell:
-    ```powershell
+  * Since leading open-source cellular cores (e.g. Open5GS, srsRAN) compile and run natively on Linux, the Ubuntu Server requires **WSL2 with Ubuntu 22.04 LTS** installed.
+  * Execute inside Terminal:
+    ```bash
     wsl --install -d Ubuntu-22.04
     wsl --update
     ```
-  * **USBIPD-WIN:** Command-line tool to pass-through physical USB SDR hardware from the Windows host environment into the virtualized WSL2 Linux guest. Install on Windows and run:
-    ```powershell
+  * **USBIPD-WIN:** Command-line tool to pass-through physical USB SDR hardware from the Ubuntu Server environment into the virtualized WSL2 Linux guest. Install on Windows and run:
+    ```bash
     usbipd wsl list
     usbipd wsl attach --busid <SDR_BUS_ID>
     ```
@@ -140,45 +140,45 @@ Before initializing the deployment, you must load the following software environ
   * Tap the three dots and select **Save**. Select the new `Rescue NIB Core` APN.
   * Turn **Cellular Data** and **Data Roaming** to **ON**. The phone will scan, authenticate via the private SIM, and connect to the private base station signal, displaying the LTE/5G network indicator.
 * **Step 3: NIB Server Local Core Routing:**
-  * The NIB's internal Windows computer runs the cellular core. The EPC/5GC virtual network interface assigns a gateway IP to the mobile core client subnet (typically `10.45.0.1` as the PGW/UPF gateway interface).
-  * Run **PowerShell** on the NIB Windows server to verify the active core interfaces:
-    ```powershell
-    ipconfig
+  * The NIB's internal Ubuntu Server runs the cellular core. The EPC/5GC virtual network interface assigns a gateway IP to the mobile core client subnet (typically `10.45.0.1` as the PGW/UPF gateway interface).
+  * Run **Terminal** on the NIB Windows server to verify the active core interfaces:
+    ```bash
+    hostname -I
     ```
   * Note the IP address of the local network interface named **`Open5GS-TUN`** or **`srsran-tun`** (usually `10.45.0.1`). This is the static IP address that all connected smartphones will use to communicate with the ARDMS backend.
 * **Step 4: Windows Firewall Administrator Rules:**
-  * On the NIB Windows PC, open **PowerShell as Administrator** and add the inbound TCP traffic rule for port `3001` on the virtual TUN interface:
-    ```powershell
-    New-NetFirewallRule -DisplayName "Rescue NIB Express Port" -Direction Inbound -LocalPort 3001 -Protocol TCP -Action Allow
+  * On the NIB Ubuntu Server, open **Terminal as Administrator** and add the inbound TCP traffic rule for port `3001` on the virtual TUN interface:
+    ```bash
+    sudo ufw allow 3001/tcp
     ```
 * **Step 5: Synchronize and Start the Rescue Platform:**
   * Open CMD, navigate to the workspace directory:
-    ```cmd
-    cd "C:\Users\Alienware\Desktop\Rescue Backup 26-04-2026"
+    ```bash
+    cd "/opt/Rescue-System-UBUNTU"
     ```
   * Run the synchronizer script and pass your specific NIB core TUN IP as an argument (e.g., `10.45.0.1`) to override dynamic LAN detection and configure the API routes to bind to the virtual cellular base station gateway:
-    ```cmd
-    python sync_apps.py 10.45.0.1
+    ```bash
+    ./run_antigravity.sh 10.45.0.1
     ```
   * Start the backend system:
-    ```cmd
+    ```bash
     cd system-backend
-    npm start
+    
     ```
 * **Step 6: Step 7: Verification & Sideloading (Detailed Testing Protocol):**
   * **Developer Options & Debugging Setup:**
     * On the Android smartphone, go to **Settings** -> **About Phone**, and tap the **`Build Number`** seven (7) times sequentially until the screen displays *"You are now a developer!"*.
     * Go back to **Settings** -> **System** -> **Developer Options** and toggle **`USB Debugging`** to **ON**. Connect the device to your PC using a high-quality USB data cable.
   * **ADB Client Deployment:**
-    * On the Windows host, download and extract Android Platform Tools. Open CMD, navigate to the extracted tools folder, and verify the handset connection:
-      ```cmd
+    * On the Ubuntu Server, download and extract Android Platform Tools. Open CMD, navigate to the extracted tools folder, and verify the handset connection:
+      ```bash
       adb devices
       ```
       *(Ensure the screen displays your phone's serial number followed by "device".)*
     * Sideload the compiled application APK binaries onto the field device directly:
-      ```cmd
-      adb install "C:\Users\Alienware\Desktop\Rescue Backup 26-04-2026\Output_APKs\rescuer-app-release.apk"
-      adb install "C:\Users\Alienware\Desktop\Rescue Backup 26-04-2026\Output_APKs\public-sos-app-release.apk"
+      ```bash
+      adb install "/opt/Rescue-System-UBUNTU\Output_APKs\rescuer-app-release.apk"
+      adb install "/opt/Rescue-System-UBUNTU\Output_APKs\public-sos-app-release.apk"
       ```
   * **Cellular Layer Registration Verification:**
     * In your NIB Server WSL2 terminal, monitor the Mobile Core EPC/5GC logs in real-time to confirm radio attachment:
@@ -192,7 +192,7 @@ Before initializing the deployment, you must load the following software environ
       *(Verify that 5 packets are transmitted, 5 are received, and latency displays round-trip times, confirming active RF-IP datapath routes.)*
   * **Database Ingestion & Validation:**
     * Launch the newly sideloaded **ARDMS Rescuer** or **Public App** on the device. Click the SOS distress button to send a test emergency event.
-    * On the Windows server computer, open the database using **DB Browser for SQLite** (located at `C:\Users\Alienware\Desktop\Rescue Backup 26-04-2026\rescue.db`).
+    * On the Windows server computer, open the database using **DB Browser for SQLite** (located at `/opt/Rescue-System-UBUNTU\rescue.db`).
     * Go to **Execute SQL** tab and run:
       ```sql
       SELECT id, category, location, timestamp FROM rescue_requests ORDER BY timestamp DESC LIMIT 1;
@@ -200,72 +200,72 @@ Before initializing the deployment, you must load the following software environ
     * Verify the table successfully contains your mobile's generated category, GPS coordinates, and current timestamp. This confirms end-to-end telemetry pipeline validation!
 
 ### 2.2.2. Physical USB Tethering (Direct Local Cellular Bridge)
-This approach leverages the mobile device's LTE/5G connection to form a direct, physical local subnet with your Windows PC server.
-* **Step 1: Connect via USB Cable:** Connect your Android phone to your Windows PC using a high-quality USB data cable.
+This approach leverages the mobile device's LTE/5G connection to form a direct, physical local subnet with your Ubuntu LTS Server.
+* **Step 1: Connect via USB Cable:** Connect your Android phone to your Ubuntu Server using a high-quality USB data cable.
 * **Step 2: Enable USB Tethering on Phone:** On the Android device, go to **Settings** -> **Network & Internet** -> **Hotspot & Tethering**, and toggle **USB Tethering** to **ON**.
 * **Step 3: Discover Tethering Subnet IP:**
-  * Open **PowerShell on your Windows PC** (Press Windows Key, type `powershell`, and press Enter).
+  * Open **Terminal on your Ubuntu Server** (Press Windows Key, type `bash`, and press Enter).
   * Execute:
-    ```powershell
-    ipconfig
+    ```bash
+    hostname -I
     ```
   * Scroll through the output to find a new adapter named **`Ethernet adapter Ethernet 2`** or **`NDIS Internet Sharing Device`**.
   * Note the **`IPv4 Address`** assigned to your computer on this tethering bridge (usually in the range `192.168.42.X` or `192.168.43.X`, e.g., `192.168.42.129`).
 * **Step 4: Configure Inbound Firewall Rules:**
-  * Open **PowerShell as Administrator** (Right-click PowerShell -> Run as Administrator) and execute:
-    ```powershell
-    New-NetFirewallRule -DisplayName "Rescue Backend USB Tethering" -Direction Inbound -LocalPort 3001 -Protocol TCP -Action Allow
+  * Open **Terminal as Administrator** (Right-click Terminal -> Run as Administrator) and execute:
+    ```bash
+    sudo ufw allow 3001/tcp
     ```
 * **Step 5: Synchronize and Rebuild:**
-  * Open CMD (Press Windows Key, type `cmd`, and press Enter), navigate to the root workspace `C:\Users\Alienware\Desktop\Rescue Backup 26-04-2026`, and run:
-    ```cmd
-    python sync_apps.py
+  * Open CMD (Press Windows Key, type `bash`, and press Enter), navigate to the root workspace `/opt/Rescue-System-UBUNTU`, and run:
+    ```bash
+    ./run_antigravity.sh
     ```
 * **Step 6: Start Server & Install App:**
   * Navigate to the `system-backend` directory in CMD and start the server:
-    ```cmd
+    ```bash
     cd system-backend
-    npm start
+    
     ```
   * Side-load the compiled APKs from `Output_APKs/` onto the tethered phone, open the app, and test local real-time transmission.
 
 ### 2.2.3. Phone Portable Hotspot Gateway Setup
-The phone acts as the cellular router, and the Windows PC joins its network.
+The phone acts as the cellular router, and the Ubuntu Server joins its network.
 * **Step 1: Enable Hotspot on Phone:** On your phone, go to **Settings** -> **Portable Hotspot** and turn it **ON**. Ensure your phone's Cellular Data (4G/5G) is active.
-* **Step 2: Connect PC to Hotspot:** On your Windows PC, click the Wi-Fi icon in the taskbar and select your phone's Hotspot name. Enter the password to connect.
+* **Step 2: Connect PC to Hotspot:** On your Ubuntu Server, click the Wi-Fi icon in the taskbar and select your phone's Hotspot name. Enter the password to connect.
 * **Step 3: Identify Gateway IP:**
-  * Open **PowerShell** and run `ipconfig`.
+  * Open **Terminal** and run `hostname -I`.
   * Look under **`Wireless LAN adapter Wi-Fi`**.
   * The **`IPv4 Address`** is your PC's IP, and the **`Default Gateway`** is your phone's IP.
 * **Step 4: Configure Firewall Inbound Access:**
-  * Open **PowerShell as Administrator** and run:
-    ```powershell
-    New-NetFirewallRule -DisplayName "Rescue Backend Hotspot" -Direction Inbound -LocalPort 3001 -Protocol TCP -Action Allow
+  * Open **Terminal as Administrator** and run:
+    ```bash
+    sudo ufw allow 3001/tcp
     ```
 * **Step 5: Bind and Boot:**
   * Run CMD, navigate to the workspace, and synchronize:
-    ```cmd
-    python sync_apps.py
+    ```bash
+    ./run_antigravity.sh
     ```
-  * Start the backend server (`npm start`) and begin testing.
+  * Start the backend server (``) and begin testing.
 
 ### 2.2.4. Tailscale Private Mesh VPN (Over LTE/5G Cellular Networks)
 If your Windows server is in one location and your rescuers are miles away on cellular networks (without sharing a Wi-Fi or tethering connection), you can create a secure, encrypted **Virtual Private Mesh Subnet** using Tailscale to bypass Carrier-Grade NAT (CGNAT).
-* **Step 1: Install Tailscale on Windows:** Download and install the Tailscale client from [Tailscale.com](https://tailscale.com/) on your Windows PC. Log in to create your private mesh network ("Tailnet").
+* **Step 1: Install Tailscale on Windows:** Download and install the Tailscale client from [Tailscale.com](https://tailscale.com/) on your Ubuntu Server. Log in to create your private mesh network ("Tailnet").
 * **Step 2: Install Tailscale on Android:** Download and install the Tailscale app from the Google Play Store on all testing Android phones. Sign in with the exact same account.
 * **Step 3: Obtain Static VPN IPs:**
-  * Once connected, Tailscale assigns a static, secure private IP (in the `100.X.Y.Z` range, e.g., `100.82.140.23`) to your Windows PC. This IP is unique and permanent.
+  * Once connected, Tailscale assigns a static, secure private IP (in the `100.X.Y.Z` range, e.g., `100.82.140.23`) to your Ubuntu Server. This IP is unique and permanent.
   * Your Android devices are also assigned their own `100.X` IPs.
 * **Step 4: Synchronize & Open Inbound Ports:**
-  * Open **PowerShell as Administrator** and add the Tailscale interface rule to the firewall:
-    ```powershell
-    New-NetFirewallRule -DisplayName "Rescue Backend Tailscale" -Direction Inbound -LocalPort 3001 -InterfaceAlias "Tailscale" -Action Allow
+  * Open **Terminal as Administrator** and add the Tailscale interface rule to the firewall:
+    ```bash
+    sudo ufw allow 3001/tcp
     ```
   * Run CMD, navigate to the workspace, and run the synchronizer:
-    ```cmd
-    python sync_apps.py
+    ```bash
+    ./run_antigravity.sh
     ```
-  * Start the server (`npm start`). Your phone can now submit SOS reports and receive live map updates from miles away over standard cellular networks!
+  * Start the server (``). Your phone can now submit SOS reports and receive live map updates from miles away over standard cellular networks!
 ---
 
 ## 3. Error Fixing Guide
@@ -289,20 +289,20 @@ This section is a troubleshooting handbook designed to help students, developers
 * **Symptom:** During Gradle APK compilation, the terminal throws an immediate parse error:
   `java.lang.IllegalArgumentException: 26.0.1` inside `org.jetbrains.kotlin.com.intellij.util.lang.JavaVersion.parse`.
 * **Root Cause:**
-  * Your Windows computer is running Java JDK 26 as its default system compiler.
+  * Your Ubuntu Server is running Java JDK 26 as its default system compiler.
   * The React Native and Expo build plugins utilize older Kotlin compiler packages.
   * These Kotlin version-parsing tools were coded before newer Java releases and cannot parse double-digit version strings higher than `21`. Seeing `"26.0.1"` triggers a parser crash, halting the build.
 * **Step-by-Step Rectification:**
   We must force the local terminal session to compile using **JDK 17** (standard stable version) without altering or uninstalling your global JDK 26.
-  1. **Open PowerShell:** Press the **Windows Key**, type **`powershell`**, and press **Enter**.
+  1. **Open Terminal:** Press the **Windows Key**, type **`bash`**, and press **Enter**.
   2. **Locate Adoptium JDK 17:** Check if the JDK 17 folder exists at:
      `C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot`
   3. **Navigate to the Project Folder:** Run the command:
-     ```powershell
-     cd "C:\Users\Alienware\Desktop\Rescue Backup 26-04-2026\rescuer-app\android"
+     ```bash
+     cd "/opt/Rescue-System-UBUNTU\rescuer-app\android"
      ```
   4. **Override JAVA_HOME and Compile:** Define the variable specifically for this session and start compile:
-     ```powershell
+     ```bash
      $env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot"
      .\gradlew.bat assembleRelease
      ```
@@ -314,18 +314,18 @@ This section is a troubleshooting handbook designed to help students, developers
 * **Category:** Network / Security Blockage.
 * **Symptom:** The phone app is installed, but triggering a distress SOS displays an infinite loading spinner or throws a `Network Request Failed` error.
 * **Root Cause:**
-  * Windows Defender Firewall secures your server from untrusted networks.
+  * UFW (Uncomplicated Firewall) secures your server from untrusted networks.
   * By default, Windows blocks all unsolicited incoming network connections to safeguard your system.
   * The Express server listens on port `3001`. Since your mobile phone is connecting over Wi-Fi, the firewall intercepts and silently drops the incoming packets on port 3001.
 * **Step-by-Step Rectification:**
   We must add a custom "Inbound Rule" that explicitly instructs the firewall to permit local TCP network traffic on port 3001.
-  1. **Open PowerShell as Administrator:**
-     * Press **Windows Key**, type **`powershell`**.
-     * **Right-click** *Windows PowerShell* and select **`Run as Administrator`**.
+  1. **Open Terminal as Administrator:**
+     * Press **Windows Key**, type **`bash`**.
+     * **Right-click** *Windows Terminal* and select **`Run as Administrator`**.
      * Click **Yes** on the pop-up warning window.
   2. **Execute Inbound Rule Command:** Paste the following command and press **Enter**:
-     ```powershell
-     New-NetFirewallRule -DisplayName "Rescue System Backend (Port 3001)" -Direction Inbound -LocalPort 3001 -Protocol TCP -Action Allow
+     ```bash
+     sudo ufw allow 3001/tcp
      ```
   3. **Anatomy of the Command Parameters:**
      * `-DisplayName "..."`: The name of the rule in the firewall dashboard.
@@ -345,12 +345,12 @@ This section is a troubleshooting handbook designed to help students, developers
   * When your computer disconnects or sleeps, the router may change your PC's IP address (e.g. from `192.168.1.4` to `192.168.1.8`).
   * The phone is still trying to send requests to your old IP address (`192.168.1.4`), leading to timed-out connection requests.
 * **Step-by-Step Rectification:**
-  1. **Open Command Prompt (CMD):** Press the **Windows Key**, type **`cmd`**, and press **Enter**.
-  2. **Run IPCONFIG:** Type `ipconfig` and note the new `IPv4 Address` on your wireless adapter.
+  1. **Open Terminal:** Press the **Windows Key**, type **`bash`**, and press **Enter**.
+  2. **Run IPCONFIG:** Type `hostname -I` and note the new `IPv4 Address` on your wireless adapter.
   3. **Run Dynamic Synchronizer:** Navigate to the root workspace and run:
-     ```cmd
-     cd "C:\Users\Alienware\Desktop\Rescue Backup 26-04-2026"
-     python sync_apps.py
+     ```bash
+     cd "/opt/Rescue-System-UBUNTU"
+     ./run_antigravity.sh
      ```
 * **Verification:** The script automatically re-scans the adapters, updates the static API routes inside all mobile code files, and recompiles the assets.
 
@@ -466,24 +466,24 @@ This section is a troubleshooting handbook designed to help students, developers
 * **Category:** Operating System Core Routing / Firewall Isolation.
 * **Symptom:** The Android phone successfully registers to the private cellular carrier (shows LTE/5G icon with strong signal) and obtains an IP address (e.g., `10.45.0.2`), but the ARDMS app cannot transmit reports to the server, and the web admin doesn't see the rescuer.
 * **Root Cause:**
-  * **WSL2 Network Isolation:** The open-source cellular core runs inside a Linux virtual machine (WSL2), which acts as a NAT network behind Windows. The cellular packets reach the WSL2 interface but cannot traverse or bridge into the Windows host backend on port 3001.
+  * **WSL2 Network Isolation:** The open-source cellular core runs inside a Linux virtual machine (WSL2), which acts as a NAT network behind Windows. The cellular packets reach the WSL2 interface but cannot traverse or bridge into the Ubuntu Server backend on port 3001.
   * **Host IP Bind Error:** The Express.js backend was booted without specifying the TUN interface's local address, meaning it is only listening on `127.0.0.1` (localhost) or the primary LAN Wi-Fi IP instead of the `Open5GS-TUN` interface gateway (`10.45.0.1`).
-  * **Windows Defender Firewall Rule Mismatch:** The firewall is configured for a Wi-Fi connection but blocks inbound packets originating from the virtual TUN interface.
+  * **UFW (Uncomplicated Firewall) Rule Mismatch:** The firewall is configured for a Wi-Fi connection but blocks inbound packets originating from the virtual TUN interface.
 * **Step-by-Step Rectification:**
   We must bind the backend server specifically to the TUN interface gateway and configure the host firewall to allow routing between the cellular subnet and the Express server.
   1. **Verify Backend Binding on Server:**
      * Ensure the Express backend binds to all active interfaces (`0.0.0.0`) or explicitly the TUN gateway (`10.45.0.1`).
-     * Run `python sync_apps.py 10.45.0.1` inside your Windows command terminal. This updates the mobile app API endpoints to target the static core gateway.
+     * Run `./run_antigravity.sh 10.45.0.1` inside your Windows command terminal. This updates the mobile app API endpoints to target the static core gateway.
   2. **Enable Packet Forwarding in WSL2:** If running the EPC/5GC core in WSL2, open the WSL2 terminal and run:
      ```bash
      sudo sysctl -w net.ipv4.ip_forward=1
      sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
      ```
   3. **Inspect/Create Windows TUN Firewall Rule:**
-     * Open **PowerShell as Administrator** and add a firewall exception specifically for the private NIB IP subnet range:
-       ```powershell
-       New-NetFirewallRule -DisplayName "Rescue NIB Core Subnet" -Direction Inbound -LocalPort 3001 -Protocol TCP -RemoteAddress 10.45.0.0/24 -Action Allow
+     * Open **Terminal as Administrator** and add a firewall exception specifically for the private NIB IP subnet range:
+       ```bash
+       sudo ufw allow 3001/tcp
        ```
-  4. **Diagnose with PowerShell Interface Checks:** Run `Get-NetIPInterface` to confirm the status of the `Open5GS-TUN` interface is active and routing.
+  4. **Diagnose with Terminal Interface Checks:** Run `Get-NetIPInterface` to confirm the status of the `Open5GS-TUN` interface is active and routing.
 * **Verification:** Running `ping 10.45.0.1` in the Termux app on the phone will return clean replies, and submitting an SOS incident will immediately record the event in the host database.
 

@@ -42,11 +42,11 @@ This document contains critical information regarding the system architecture, c
 
 ### 🚀 How to Run Locally
 1. **Kill existing ports** (if any):
-   ```powershell
+   ```bash
    npx kill-port 3001
    ```
 2. **Start the Backend Server**:
-   ```powershell
+   ```bash
    cd system-backend
    node server.js
    ```
@@ -57,7 +57,7 @@ This document contains critical information regarding the system architecture, c
 
 ### 🔄 Database Management
 - To reset all data and seed fresh dummy accounts:
-  ```powershell
+  ```bash
   node system-backend/hard_reset.js
   ```
 
